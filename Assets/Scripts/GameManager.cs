@@ -36,7 +36,7 @@ public class GameManager : NetworkBehaviour
         if (IsClient){
             // For continuity, should assume control/reconnect existing characer
             if(IsServer){
-                GameObject spawnedPlayer = Instantiate(playerPrefab, new Vector3(0, 10, 0), Quaternion.identity);
+                GameObject spawnedPlayer = Instantiate(playerPrefab, new Vector3(0, 20, 0), Quaternion.identity);
                 spawnedPlayer.name = "Player" + NetworkManager.Singleton.LocalClientId.ToString();
                 spawnedPlayer.GetComponent<NetworkObject>().Spawn();
                 playerCinemachine.GetComponent<PlayerFollow>().SetTarget(spawnedPlayer);

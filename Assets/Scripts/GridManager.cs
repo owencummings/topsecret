@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class GridManager : NetworkBehaviour
@@ -8,8 +9,9 @@ public class GridManager : NetworkBehaviour
     public GameObject prefab;
     private float cubeSize = 15.0f;
     private float cubeMass = 500.0f;
-    private int gridSize = 10; // Could make this not a square, of course
+    private int gridSize = 20; // Could make this not a square, of course
     private float[,] staticHeights; // Set this to be the height that each individual pylon should static at
+    private float[,] currStaticHeights; // Set this to be the height that each individual pylon should static at
     private GameObject[,] cubes;
     private Rigidbody rb;
 
@@ -21,11 +23,12 @@ public class GridManager : NetworkBehaviour
         for (int time = 0; time < gridSize*2 + 1; time++){
             for (int i  = 0; i < gridSize; i++){
                 for (int j = 0; j < gridSize; j++){
-                    if (i + j == time){
-                        rb = cubes[i,j].GetComponent<Rigidbody>();
-                        if (!(( rb.constraints & RigidbodyConstraints.FreezePositionY ) != RigidbodyConstraints.None)){
-                            rb.AddForce(Vector3.up*500*power);
-                        }
+                    if (i + j != time || cubes[i,j] == null){
+                        continue;
+                    }
+                    rb = cubes[i,j].GetComponent<Rigidbody>();
+                    if (!(( rb.constraints & RigidbodyConstraints.FreezePositionY ) != RigidbodyConstraints.None)){
+                        rb.AddForce(Vector3.up*500*power);
                     }
                 }
             }
@@ -44,10 +47,13 @@ public class GridManager : NetworkBehaviour
                 targetJ = j;
                 if (i % 2 == 1){
                     targetJ = gridSize - 1 - j;
+                }                    
+                if (cubes[i,targetJ] == null){
+                    continue;
                 }
                 rb = cubes[i,targetJ].GetComponent<Rigidbody>();
                 if (!(( rb.constraints & RigidbodyConstraints.FreezePositionY ) != RigidbodyConstraints.None)){
-                    staticHeights[i,targetJ] = 0;
+                    currStaticHeights[i,targetJ] = 0;
                 }
                 yield return new WaitForSeconds(interval);   
             }
@@ -64,8 +70,12 @@ public class GridManager : NetworkBehaviour
   
         // Iterate from 0 to R * C - 1
         for (int i = 0; i < Mathf.Pow(gridSize, 2); i++) {
-            if (!(( rb.constraints & RigidbodyConstraints.FreezePositionY ) != RigidbodyConstraints.None)){
-                staticHeights[r,c] = 0;
+            if (cubes[r,c] != null) {
+                continue;
+            }
+
+            if (!(( rb.constraints & RigidbodyConstraints.FreezePositionY ) != RigidbodyConstraints.None) ){
+                currStaticHeights[r,c] = 0;
             }
             yield return new WaitForSeconds(interval);               
             seen[r, c] = true;
@@ -90,7 +100,7 @@ public class GridManager : NetworkBehaviour
 
     // Presets for InvokeRepeating()
     void SmallWave(){
-        StartCoroutine(Wave(700.0f, .6f));
+        StartCoroutine(Wave(1000.0f, .6f));
     }
 
     void LargeWave(){
@@ -107,11 +117,7 @@ public class GridManager : NetworkBehaviour
     #endregion
 
     void ResetStaticHeights(){
-        for (int i  = 0; i < gridSize; i++){
-            for (int j = 0; j < gridSize; j++){
-                staticHeights[i,j] = -0.5f * gridSize;;
-            }
-        }
+        currStaticHeights = staticHeights;
     }
 
     public override void OnNetworkSpawn()
@@ -122,11 +128,30 @@ public class GridManager : NetworkBehaviour
             return;
         }
 
+
+        // Let's look at a cellular noise approach, with fixed block sizes.
+        float xSinAmp = UnityEngine.Random.Range(0.0f, 2.0f);
+        float xSinPeriod = UnityEngine.Random.Range(0.05f, 0.1f);
+        float xSinShift = UnityEngine.Random.Range(0.0f, 2*Mathf.PI);
+        float ySinAmp = UnityEngine.Random.Range(0.0f, 2.0f);
+        float ySinPeriod = UnityEngine.Random.Range(0.05f, 0.1f);
+        float ySinShift = UnityEngine.Random.Range(0.0f, 2*Mathf.PI);
+
         staticHeights = new float[gridSize,gridSize];
         cubes = new GameObject[gridSize,gridSize];
         for (int i = 0; i < gridSize; i++){
             for (int j = 0; j < gridSize; j++){
-                staticHeights[i,j] = -0.5f * gridSize;
+
+                // Input into a noise function to see if they should exist...
+                float iScaled = (float)i/(float)gridSize * 4; // 4 is magic number that looks good with this grid size
+                float jScaled =  (float)j/(float)gridSize * 4;
+                // TODO: Add a radial vignette here...
+                if (noise.cellular(new float2(iScaled, jScaled))[0] < 0.5f){
+                    continue;
+                }
+
+                // Initialize grid objects
+                staticHeights[i,j] = -0.5f * gridSize + xSinAmp*Mathf.Sin(xSinPeriod*(i + xSinShift)) + ySinAmp*Mathf.Sin(ySinPeriod*(j + ySinShift));
                 cubes[i,j] = Instantiate(prefab, new Vector3((i-gridSize/2)*cubeSize, -0.5f*gridSize*cubeSize, (j-gridSize/2)*cubeSize),
                                                                 Quaternion.identity);
                 cubes[i,j].GetComponent<NetworkObject>().Spawn();
@@ -142,6 +167,9 @@ public class GridManager : NetworkBehaviour
                                  | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
             }
         }
+
+        currStaticHeights = staticHeights;
+
         InvokeRepeating("SmallWave", 0.0f, 20.0f);
         //InvokeRepeating("LargeWave", 10.0f, 20.0f);
         //InvokeRepeating("AutoSnake", 0.0f, 50.0f);
@@ -158,11 +186,14 @@ public class GridManager : NetworkBehaviour
         float diff;
         for (int i  = 0; i < gridSize; i++){
             for (int j = 0; j < gridSize; j++){
+                if (cubes[i,j] == null) {
+                    continue;
+                }
                 // Add force pushing hex back to center
-                diff = Mathf.Abs(cubes[i,j].transform.position.y - staticHeights[i,j]);
-                if (cubes[i,j].transform.position.y > 0.95f * cubeSize * staticHeights[i, j]){
+                diff = Mathf.Abs(cubes[i,j].transform.position.y - currStaticHeights[i,j]);
+                if (cubes[i,j].transform.position.y > 0.95f * cubeSize * currStaticHeights[i, j]){
                     cubes[i,j].GetComponent<Rigidbody>().AddForce(Vector3.down*cubeMass*10*diff);
-                } else if(cubes[i,j].transform.position.y < 1.05f * cubeSize * staticHeights[i,j]){
+                } else if(cubes[i,j].transform.position.y < 1.05f * cubeSize * currStaticHeights[i,j]){
                     cubes[i,j].GetComponent<Rigidbody>().AddForce(Vector3.up*cubeMass*10*diff);
                 }
             }
