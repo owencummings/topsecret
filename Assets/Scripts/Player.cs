@@ -19,6 +19,7 @@ public class Player : NetworkBehaviour
     bool toJump = false;
     int layerMask = ~0;
     float speedForce = 20;
+    private Animator animator;
 
     // TODO: put jumping on a different component and have this just be movement.
 
@@ -54,6 +55,7 @@ public class Player : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         rb = this.GetComponent<Rigidbody>();
+        animator = this.GetComponent<Animator>();
         playerCinemachine = GameObject.Find("PlayerCam"); // Could do some in-scene renaming here
         mainCam = GameObject.Find("Main Camera");
         if (IsOwner){
@@ -108,6 +110,13 @@ public class Player : NetworkBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space)){
             sendJump = true;
+        }
+        if (!Physics.Raycast(this.transform.position, Vector3.down, 2f, layerMask)){
+            animator.SetBool("isAirborne", true);
+        }
+        else {
+            animator.SetBool("isAirborne", false);
+            animator.SetFloat("speed", rb.velocity.magnitude);
         }
     }
 }
