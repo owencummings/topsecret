@@ -18,7 +18,7 @@ public class GameManager : NetworkBehaviour
     void SpawnPlayerServerRpc(ServerRpcParams serverRpcParams = default){
         if (IsServer){
             // For continuity, should assume control/reconnect existing characer
-            GameObject player = Instantiate(playerPrefab, new Vector3(0, 10, 0), Quaternion.identity);
+            GameObject player = Instantiate(playerPrefab, new Vector3(0, 20, 0), Quaternion.identity);
             player.name = "Player" + serverRpcParams.Receive.SenderClientId.ToString();
             player.GetComponent<NetworkObject>().SpawnWithOwnership(serverRpcParams.Receive.SenderClientId);
         }

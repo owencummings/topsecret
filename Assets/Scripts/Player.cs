@@ -15,6 +15,7 @@ public class Player : NetworkBehaviour
         {KeyCode.A, Vector3.left},
         {KeyCode.D, Vector3.right}
     };
+    bool sendJump = false;
     bool toJump = false;
     int layerMask = ~0;
     float speedForce = 20;
@@ -22,12 +23,12 @@ public class Player : NetworkBehaviour
     // TODO: put jumping on a different component and have this just be movement.
 
     [ServerRpc]
-    void ApplyRotateInputServerRpc(Quaternion newRotation, ServerRpcParams serverRpcParams = default){
+    void ApplyRotateInputServerRpc(float newEulerY, ServerRpcParams serverRpcParams = default){
         var clientId = serverRpcParams.Receive.SenderClientId;
         if (NetworkManager.ConnectedClients.ContainsKey(clientId))
         {
             var tf = this.gameObject.transform;
-            tf.rotation = new Quaternion(tf.rotation.x, newRotation.y, tf.rotation.z, tf.rotation.w);
+            tf.rotation = Quaternion.Euler(tf.eulerAngles.x, newEulerY, tf.eulerAngles.z);
         }
     }
 
@@ -66,8 +67,8 @@ public class Player : NetworkBehaviour
             return;
         }
         if (IsOwner){
-            // Mirror rotation (fine until we need stun states and gradual rotating)
-            ApplyRotateInputServerRpc(mainCam.transform.rotation);
+            // Mirror rotation of camera (fine for now)
+            ApplyRotateInputServerRpc(mainCam.transform.eulerAngles.y);
 
             // Pass movement input vector to server.
             Vector3 moveVector = new Vector3();
@@ -78,6 +79,11 @@ public class Player : NetworkBehaviour
             }
             if(moveVector != Vector3.zero){
                 ApplyMovementInputServerRpc(moveVector);
+            }
+
+            if (sendJump){
+                ApplyJumpInputServerRpc();
+                sendJump = false;
             }
         }
 
@@ -101,7 +107,7 @@ public class Player : NetworkBehaviour
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space)){
-            ApplyJumpInputServerRpc(); // It's OK to do this before a fixed update I imagine?
+            sendJump = true;
         }
     }
 }

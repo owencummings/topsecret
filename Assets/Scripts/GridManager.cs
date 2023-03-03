@@ -130,11 +130,11 @@ public class GridManager : NetworkBehaviour
 
 
         // Let's look at a cellular noise approach, with fixed block sizes.
-        float xSinAmp = UnityEngine.Random.Range(0.0f, 2.0f);
-        float xSinPeriod = UnityEngine.Random.Range(0.05f, 0.1f);
+        float xSinAmp = UnityEngine.Random.Range(0.0f, 30.0f);
+        float xSinPeriod = UnityEngine.Random.Range(0.8f, 1.2f);
         float xSinShift = UnityEngine.Random.Range(0.0f, 2*Mathf.PI);
-        float ySinAmp = UnityEngine.Random.Range(0.0f, 2.0f);
-        float ySinPeriod = UnityEngine.Random.Range(0.05f, 0.1f);
+        float ySinAmp = UnityEngine.Random.Range(0.0f, 30.0f);
+        float ySinPeriod = UnityEngine.Random.Range(0.8f, 1.2f);
         float ySinShift = UnityEngine.Random.Range(0.0f, 2*Mathf.PI);
 
         staticHeights = new float[gridSize,gridSize];
@@ -151,14 +151,15 @@ public class GridManager : NetworkBehaviour
                 }
 
                 // Initialize grid objects
-                staticHeights[i,j] = -0.5f * gridSize + xSinAmp*Mathf.Sin(xSinPeriod*(i + xSinShift)) + ySinAmp*Mathf.Sin(ySinPeriod*(j + ySinShift));
-                cubes[i,j] = Instantiate(prefab, new Vector3((i-gridSize/2)*cubeSize, -0.5f*gridSize*cubeSize, (j-gridSize/2)*cubeSize),
+                staticHeights[i,j] = -1f * cubeSize * gridSize/2 + xSinAmp*Mathf.Sin(xSinPeriod*(i + xSinShift))
+                                                                 + ySinAmp*Mathf.Sin(ySinPeriod*(j + ySinShift));
+                cubes[i,j] = Instantiate(prefab, new Vector3((i-gridSize/2)*cubeSize, staticHeights[i,j], (j-gridSize/2)*cubeSize),
                                                                 Quaternion.identity);
                 cubes[i,j].GetComponent<NetworkObject>().Spawn();
                 cubes[i,j].transform.localScale = new Vector3(cubeSize, gridSize*cubeSize, cubeSize);
                 rb = cubes[i,j].GetComponent<Rigidbody>();
                 rb.useGravity = false;
-                rb.mass = cubeMass; // Could base this on size
+                rb.mass = cubeSize*cubeSize*gridSize; // Could base this on size
                 rb.drag = 2f;
                 // Keep an eye on doing nearby hex interpolation only (for client performance reasons)
                 rb.interpolation = RigidbodyInterpolation.Interpolate;
@@ -170,7 +171,7 @@ public class GridManager : NetworkBehaviour
 
         currStaticHeights = staticHeights;
 
-        InvokeRepeating("SmallWave", 0.0f, 20.0f);
+        //InvokeRepeating("SmallWave", 0.0f, 20.0f);
         //InvokeRepeating("LargeWave", 10.0f, 20.0f);
         //InvokeRepeating("AutoSnake", 0.0f, 50.0f);
         //InvokeRepeating("AutoSpiral", 0.0f, 40.0f);
@@ -189,12 +190,12 @@ public class GridManager : NetworkBehaviour
                 if (cubes[i,j] == null) {
                     continue;
                 }
-                // Add force pushing hex back to center
+                // Add force pushing square back to center
                 diff = Mathf.Abs(cubes[i,j].transform.position.y - currStaticHeights[i,j]);
                 if (cubes[i,j].transform.position.y > 0.95f * cubeSize * currStaticHeights[i, j]){
-                    cubes[i,j].GetComponent<Rigidbody>().AddForce(Vector3.down*cubeMass*10*diff);
+                    cubes[i,j].GetComponent<Rigidbody>().AddForce(Vector3.down*cubeMass*0.5f*diff);
                 } else if(cubes[i,j].transform.position.y < 1.05f * cubeSize * currStaticHeights[i,j]){
-                    cubes[i,j].GetComponent<Rigidbody>().AddForce(Vector3.up*cubeMass*10*diff);
+                    cubes[i,j].GetComponent<Rigidbody>().AddForce(Vector3.up*cubeMass*0.5f*diff);
                 }
             }
         }
