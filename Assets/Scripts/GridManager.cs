@@ -7,9 +7,9 @@ using UnityEngine;
 public class GridManager : NetworkBehaviour
 {
     public GameObject prefab;
-    private float cubeSize = 15.0f;
-    private float cubeMass = 500.0f;
-    private int gridSize = 20; // Could make this not a square, of course
+    static private float cubeSize = 15.0f;
+    static private int gridSize = 20; // Could make this not a square, of course
+    static private float cubeMass = 500f; // For some reason, size also affects how rigid bodies react to force, not just mass. Maybe it is friction between pillars.
     private float[,] staticHeights; // Set this to be the height that each individual pylon should static at
     private float[,] currStaticHeights; // Set this to be the height that each individual pylon should static at
     private GameObject[,] cubes;
@@ -27,9 +27,7 @@ public class GridManager : NetworkBehaviour
                         continue;
                     }
                     rb = cubes[i,j].GetComponent<Rigidbody>();
-                    if (!(( rb.constraints & RigidbodyConstraints.FreezePositionY ) != RigidbodyConstraints.None)){
-                        rb.AddForce(Vector3.up*500*power);
-                    }
+                    rb.AddForce(Vector3.up*cubeMass*power);
                 }
             }
             yield return new WaitForSeconds(interval);   
@@ -37,7 +35,7 @@ public class GridManager : NetworkBehaviour
 
     }
 
-    IEnumerator  Snake(float power=5000.0f, float interval=.3f){
+    IEnumerator  Snake(float interval=.1f){
         // TODO: create util function to reverse-engineer desired force of push for reaching destination
         // Fire each square in order
         int targetJ;
@@ -52,9 +50,7 @@ public class GridManager : NetworkBehaviour
                     continue;
                 }
                 rb = cubes[i,targetJ].GetComponent<Rigidbody>();
-                if (!(( rb.constraints & RigidbodyConstraints.FreezePositionY ) != RigidbodyConstraints.None)){
-                    currStaticHeights[i,targetJ] = 0;
-                }
+                currStaticHeights[i,targetJ] = -1f * cubeSize * gridSize/2 + 60f;
                 yield return new WaitForSeconds(interval);   
             }
         }
@@ -62,7 +58,7 @@ public class GridManager : NetworkBehaviour
         ResetStaticHeights();
     }
 
-    IEnumerator  Spiral(float power=5000.0f, float interval=.3f){  
+    IEnumerator  Spiral(float interval=.1f){  
         bool[, ] seen = new bool[gridSize, gridSize];
         int[] dr = { 0, 1, 0, -1 };
         int[] dc = { 1, 0, -1, 0 };
@@ -71,13 +67,9 @@ public class GridManager : NetworkBehaviour
         // Iterate from 0 to R * C - 1
         for (int i = 0; i < Mathf.Pow(gridSize, 2); i++) {
             if (cubes[r,c] != null) {
-                continue;
+                currStaticHeights[r,c] = -1f * cubeSize * gridSize/2 + 60f;
+                yield return new WaitForSeconds(interval);
             }
-
-            if (!(( rb.constraints & RigidbodyConstraints.FreezePositionY ) != RigidbodyConstraints.None) ){
-                currStaticHeights[r,c] = 0;
-            }
-            yield return new WaitForSeconds(interval);               
             seen[r, c] = true;
             int cr = r + dr[di];
             int cc = c + dc[di];
@@ -100,11 +92,11 @@ public class GridManager : NetworkBehaviour
 
     // Presets for InvokeRepeating()
     void SmallWave(){
-        StartCoroutine(Wave(1000.0f, .6f));
+        StartCoroutine(Wave(15000.0f, .6f));
     }
 
     void LargeWave(){
-        StartCoroutine(Wave(4000.0f, .1f));
+        StartCoroutine(Wave(30000.0f, .1f));
     }
 
     void AutoSnake(){
@@ -151,12 +143,12 @@ public class GridManager : NetworkBehaviour
                 }
 
                 // Initialize grid objects
-                staticHeights[i,j] = -1f * cubeSize * gridSize/2 + xSinAmp*Mathf.Sin(xSinPeriod*(i + xSinShift))
-                                                                 + ySinAmp*Mathf.Sin(ySinPeriod*(j + ySinShift));
+                staticHeights[i,j] = Mathf.Floor(-1f * cubeSize * gridSize/2 + xSinAmp*Mathf.Sin(xSinPeriod*(i + xSinShift))
+                                                                             + ySinAmp*Mathf.Sin(ySinPeriod*(j + ySinShift)));
                 cubes[i,j] = Instantiate(prefab, new Vector3((i-gridSize/2)*cubeSize, staticHeights[i,j], (j-gridSize/2)*cubeSize),
                                                                 Quaternion.identity);
                 cubes[i,j].GetComponent<NetworkObject>().Spawn();
-                cubes[i,j].transform.localScale = new Vector3(cubeSize, gridSize*cubeSize, cubeSize);
+                cubes[i,j].transform.localScale = new Vector3(cubeSize, gridSize*cubeSize, cubeSize); // TODO: Make the transform a little smaller than the RB for visual effect?
                 rb = cubes[i,j].GetComponent<Rigidbody>();
                 rb.useGravity = false;
                 rb.mass = cubeSize*cubeSize*gridSize; // Could base this on size
@@ -172,7 +164,7 @@ public class GridManager : NetworkBehaviour
         currStaticHeights = staticHeights;
 
         //InvokeRepeating("SmallWave", 0.0f, 20.0f);
-        //InvokeRepeating("LargeWave", 10.0f, 20.0f);
+        InvokeRepeating("LargeWave", 0.0f, 20.0f);
         //InvokeRepeating("AutoSnake", 0.0f, 50.0f);
         //InvokeRepeating("AutoSpiral", 0.0f, 40.0f);
     }
@@ -192,10 +184,10 @@ public class GridManager : NetworkBehaviour
                 }
                 // Add force pushing square back to center
                 diff = Mathf.Abs(cubes[i,j].transform.position.y - currStaticHeights[i,j]);
-                if (cubes[i,j].transform.position.y > 0.95f * cubeSize * currStaticHeights[i, j]){
-                    cubes[i,j].GetComponent<Rigidbody>().AddForce(Vector3.down*cubeMass*0.5f*diff);
-                } else if(cubes[i,j].transform.position.y < 1.05f * cubeSize * currStaticHeights[i,j]){
-                    cubes[i,j].GetComponent<Rigidbody>().AddForce(Vector3.up*cubeMass*0.5f*diff);
+                if (cubes[i,j].transform.position.y > currStaticHeights[i, j] +  0.2f){
+                    cubes[i,j].GetComponent<Rigidbody>().AddForce(Vector3.down*cubeMass*40f*diff);
+                } else if(cubes[i,j].transform.position.y < currStaticHeights[i,j]){
+                    cubes[i,j].GetComponent<Rigidbody>().AddForce(Vector3.up*cubeMass*40f*diff);
                 }
             }
         }

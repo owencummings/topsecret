@@ -70,6 +70,9 @@ public class Player : NetworkBehaviour
         }
         if (IsOwner){
             // Mirror rotation of camera (fine for now)
+            var tf = this.gameObject.transform;
+            var newEulerY = mainCam.transform.eulerAngles.y;
+            tf.rotation = Quaternion.Euler(tf.eulerAngles.x, newEulerY, tf.eulerAngles.z);
             ApplyRotateInputServerRpc(mainCam.transform.eulerAngles.y);
 
             // Pass movement input vector to server.
