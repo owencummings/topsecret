@@ -7,7 +7,7 @@ public class RollbackManager : MonoBehaviour
 {
     public int tick = 0;
     public int ticksPerSecond = 60;
-    public IRollbackable[] rollbackableBehaviours;
+    public List<IList> rollbackableBuffers;
     public bool newServerResponse;
 
     // Singleton pattern
@@ -31,6 +31,7 @@ public class RollbackManager : MonoBehaviour
             // Run a simulation on the provided
 
             // So for each object to be calculated in the environment... we need...
+            // - a proper collection of buffers of different types
             // - Their rbs (with full info) at start
             // - And, inputs that change RBs
             // - Obvious problem is that includes every grid square...
