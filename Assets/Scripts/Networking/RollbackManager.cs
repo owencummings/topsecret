@@ -5,8 +5,8 @@ using CustomNetworking;
 
 public class RollbackManager : MonoBehaviour
 {
-    public int tick = 0;
-    public int ticksPerSecond = 60;
+    public static int tick = 0;
+    public static int ticksPerSecond = 60;
     public float tickRate = (float) tick / (float) ticksPerSecond;
     public List<IList> rollbackableBuffers;
     public bool newServerResponse;
@@ -55,6 +55,16 @@ public class RollbackManager : MonoBehaviour
             // 
             // How do we subscribe to the rollbackManager? I guess we should use an abstract class
             // With a built-in subscribe function when its initialized
+
+
+            // So we need...
+            // A state format
+            // An input format or a state change format, that is replicable 
+            // Buffer arrays of each
+            // A hookup on awake to the manager (RollbackManager.instance.sync())
+            // Something to remove reference on 
+            // But the methods that lookup 
+            //
         }
         // So what would this look like exactly? We would have distributed buffers on each component attached to this one???
         // And then
