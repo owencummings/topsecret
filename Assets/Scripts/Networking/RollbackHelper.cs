@@ -12,8 +12,8 @@ namespace CustomNetworking {
         public bool rollbacking;
 
 
-        public virtual T[] stateBuffer;
-        public virtual U[] inputBuffer;
+        public T[] stateBuffer;
+        public U[] inputBuffer;
 
         public T serverState;
         public int serverTick;
@@ -34,7 +34,7 @@ namespace CustomNetworking {
 
         private void Awake(){
             // subscribe to rollbackManager on changes to serverstate
-            // This involves also passing ref of 
+            // Pass ref of required buffers to the buffer collection on rollbackManager
         }
 
         private void Destroy(){
