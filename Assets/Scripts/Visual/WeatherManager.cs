@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class WeatherManager : MonoBehaviour
 {
-    public Vector3 sunLocation = new Vector3(1f, 1f, 0f);
+    public Vector3 sunLocation = new Vector3(1f, 2f, 0f);
     public float sunSize = 0.01f;
     public Color closeAtmosphereColor = new Color(0.637f, 0.877f, 0.950f, 1f);
     public Color farAtmosphereColor = new Color(0.419f, 0.705f, 0.910f, 1f);
@@ -16,9 +16,11 @@ public class WeatherManager : MonoBehaviour
 
     void Awake()
     {
-        RenderSettings.ambientLight = (closeAtmosphereColor+farAtmosphereColor)/2;
+        RenderSettings.ambientLight = closeAtmosphereColor; // Currently I think the shader overshoots the lerp, so farAtmosphere is actually the midrange. 
         RenderSettings.fog = true;
         RenderSettings.fogMode = FogMode.ExponentialSquared;
+        RenderSettings.fogColor = farAtmosphereColor;
+        //RenderSettings.fogDensity = 0.1f;
     }
 
     void Start(){

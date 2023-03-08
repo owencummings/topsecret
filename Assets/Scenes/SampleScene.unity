@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.14686584, g: 0.4553168, b: 0.807446, a: 1}
+  m_IndirectSpecularColor: {r: 0.12540144, g: 0.40239352, b: 0.79874283, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1401,10 +1401,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64c6239be2be0bc4d9e7970082161d9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sunDirection: {x: 1, y: 1, z: 0}
+  sunLocation: {x: 1, y: 2, z: 0}
   sunSize: 0.2
-  closeAtmosphereColor: {r: 0.637, g: 0.877, b: 0.95, a: 1}
-  farAtmosphereColor: {r: 0.419, g: 0.705, b: 0.91, a: 1}
+  closeAtmosphereColor: {r: 0.45594516, g: 0.78985184, b: 0.8867924, a: 1}
+  farAtmosphereColor: {r: 0.38875046, g: 0.666835, b: 0.9056604, a: 1}
   mainLightObject: {fileID: 410087039}
   mainLightColor: {r: 0.9716981, g: 0.9690339, b: 0.875445, a: 0}
   skyboxMaterial: {fileID: 2100000, guid: 754a2300a3ad0494db343b409a5dc9d3, type: 2}
