@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 7608315540076413620}
   - component: {fileID: 7608315540076413623}
   - component: {fileID: 7608315540076413622}
+  - component: {fileID: 3369247008433510848}
   m_Layer: 0
   m_Name: GridPylon
   m_TagString: Untagged
@@ -169,5 +170,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f6c0be61502bb534f922ebb746851216, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3369247008433510848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7608315540076413644}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50b9d4cb80a18794e9e8b0565158f504, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
