@@ -126,10 +126,12 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _CloseAtmosphereColor: {r: 0.45594516, g: 0.78985184, b: 0.8867924, a: 1}
+    - _CloseAtmosphereColor: {r: 0.7989943, g: 0.9474624, b: 0.990566, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _DarkAtmosphereColor: {r: 0, g: 0.7093437, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FarAtmosphereColor: {r: 0.38875046, g: 0.666835, b: 0.9056604, a: 1}
+    - _FarAtmosphereColor: {r: 0.18427375, g: 0.6331108, b: 0.9528302, a: 1}
+    - _LightAtmosphereColor: {r: 0.8443396, g: 0.9777628, b: 1, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SunDirection: {r: -0.4472136, g: -0.8944272, b: -0, a: 0}
   m_BuildTextureStacks: []
