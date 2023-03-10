@@ -153,6 +153,7 @@ public class GridManager : NetworkBehaviour
                 rb.useGravity = false;
                 rb.mass = cubeSize*cubeSize*gridSize; // Could base this on size
                 rb.drag = 2f;
+                rb.solverIterations = 2; // We can keep these very light on calculations due to simplicity
                 // Keep an eye on doing nearby hex interpolation only (for client performance reasons)
                 rb.interpolation = RigidbodyInterpolation.Interpolate;
                 // These constraints help keep the grid stable

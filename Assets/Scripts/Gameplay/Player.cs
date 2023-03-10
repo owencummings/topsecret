@@ -4,6 +4,26 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.VFX;
 
+public struct InputPayload
+{
+    // Can change to a vector if adding a controller...
+    public bool up;
+    public bool down;
+    public bool left;
+    public bool right;
+    public bool jump;
+    public Quaternion rotation; // Should I track change in rotation with mouse? Or just actual rotation 
+}
+
+public struct StatePayload
+{
+    public int tick;
+    public Vector3 position;
+    public Quaternion rotation;
+    public Vector3 velocity;
+    public int stateEnum;
+}
+
 public class Player : NetworkBehaviour
 {
     private GameObject playerCinemachine;
@@ -20,6 +40,8 @@ public class Player : NetworkBehaviour
     int layerMask = ~0;
     float speedForce = 20;
     private Animator animator;
+    
+
 
     // TODO: put jumping on a different component and have this just be movement.
 
@@ -63,6 +85,11 @@ public class Player : NetworkBehaviour
         }
     }
 
+
+
+    void applyInputPayload(ref StatePayload currentState){
+
+    }
 
     void FixedUpdate(){
         if (!IsSpawned){

@@ -1,14 +1,60 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using CustomNetworking;
+using CustomNetcode;
 
+// TODO if necessary... let's try it client driven and 
 public class RollbackManager : MonoBehaviour
-{
+{ 
     public static int tick = 0;
     public static int ticksPerSecond = 60;
     public float tickRate = (float) tick / (float) ticksPerSecond;
-    public List<IList> rollbackableBuffers;
+    public Dictionary<int, IList> idToStateBufferMap;
+    public Dictionary<int, IList> idToInputBufferMap;
+    public HashSet<int> rollbackableIds;
+
+    // What is the process for non-rollbackables?
+    // Do the buffers go here or in each rollbackable?
+
+    // Statefuls need state buffers
+    // Inputfuls need input buffers
+    // rollbackables need to be able to assume a provided state instantly (transition to it over time with one input)
+    
+    // Process is...
+    // Component created with RollbackableHelper
+    // -> Helper creates a copy in parallel game scene with same state
+    // ---> Probably need to add some extra stuff for rigidbody/transform/animator information
+    // -> enter components to parallelMap and idToComponentMap
+    // -> add to rollbackableIds if necessary 
+    // -> add buffers to buffer maps. it isnt automatic.
+    // !! instantiate a helper object within each rollbackable component
+    // ?? how to deal with adding components to objects?
+    // ---> Each component can Reference a particular state string to effect...
+    // ---> so maybe like map(objectId, map(componentEnum, Component/Input+StateBuffer)) ... some kind of structure like that
+    // ?? I guess we instead make components with IRollbackable with instead? Well..
+    // Would need to have some kind of rollbackable 
+
+    // Object is updated via input
+    // -> pass input to input buffer 
+
+    // Object is updated via sync
+
+    // Component is removed
+
+    // It would be ideal to map to the rollback component instead? A little annoying but... that's fine.
+    // How to separate rollback targets from 
+    /*
+    So normally I would do...
+    playerStateBuffer=x
+    inputBuffer=y
+    gameStateBuffer=z
+
+    // Recreate scene or physics scene around 
+    */
+
+    // OK, we need to do the resimulation in-scene? hmmm... OK. Lets
+
+
     public bool newServerResponse;
 
     // Singleton pattern

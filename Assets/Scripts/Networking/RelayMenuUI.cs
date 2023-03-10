@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
- using UnityEngine.SceneManagement;
+using UnityEngine.SceneManagement;
  
 
 public class RelayMenuUI : MonoBehaviour
@@ -38,7 +38,9 @@ public class RelayMenuUI : MonoBehaviour
         // launch game... spawn this button after creating server?
         if (ready){
             if (GUI.Button(new Rect(10, 130, 200, 50), "Launch Game")){
-                NetworkManager.Singleton.SceneManager.LoadScene("SampleScene", LoadSceneMode.Single);
+                NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+                Debug.Log("Loading parallel scene");
+                SceneManager.LoadScene("ParallelGameScene", LoadSceneMode.Additive);
             }
         }
 

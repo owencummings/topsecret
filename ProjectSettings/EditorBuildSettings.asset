@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/ServerSetupScene.unity
     guid: aefd5754221c7cb46ae923b5b02e5c1c
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Scenes/GameScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/ParallelGameScene.unity
+    guid: e41277f0012db254b9bce43313a861a0
   m_configObjects: {}
