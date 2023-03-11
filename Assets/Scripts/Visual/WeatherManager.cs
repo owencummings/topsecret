@@ -24,24 +24,49 @@ public class WeatherManager : MonoBehaviour
     }
 
     void Start(){
-        updateSunLocation(sunLocation);
+        updateSunLocation();
         mainLight = mainLightObject.GetComponent<Light>();
-        mainLight.color = mainLightColor;
+        updateColors();
         skyboxMaterial.SetFloat("_SunSize", sunSize);
-        skyboxMaterial.SetColor("_LightAtmosphereColor", lightAtmosphereColor);
-        skyboxMaterial.SetColor("_DarkAtmosphereColor", darkAtmosphereColor);
         StartCoroutine(RotateSun(new Vector3(3f, 0.01f, 0f)));
+        StartCoroutine(ShiftColors(Color.white, Color.yellow, Color.yellow));
     }
 
-    void updateSunLocation(Vector3 newLocation){
-        sunLocation = newLocation.normalized;
+    void updateSunLocation(){
+        sunLocation = sunLocation.normalized;
         skyboxMaterial.SetVector("_SunDirection", new Vector4(-1*sunLocation.x, -1*sunLocation.y, -1*sunLocation.z, 0f));
         mainLightObject.transform.rotation = Quaternion.LookRotation(-1*sunLocation);
     }
 
+    void updateColors(){
+        mainLight.color = mainLightColor;
+        skyboxMaterial.SetColor("_LightAtmosphereColor", lightAtmosphereColor);
+        skyboxMaterial.SetColor("_DarkAtmosphereColor", darkAtmosphereColor);
+        RenderSettings.ambientLight = lightAtmosphereColor;
+        RenderSettings.fogColor = darkAtmosphereColor;
+    }
+
     IEnumerator RotateSun(Vector3 targetVector, float rotateSpeed=0.002f){
         while (sunLocation != targetVector){
-            updateSunLocation(Vector3.RotateTowards(sunLocation, targetVector, rotateSpeed, 1f));
+            sunLocation = Vector3.RotateTowards(sunLocation, targetVector, rotateSpeed, 0f);
+            updateSunLocation();
+            yield return new WaitForSeconds(0.033f);
+        }
+    }
+
+    IEnumerator ShiftColors(Color targetLight, Color targetDark, Color targetAmbient, float duration=20f){
+        Color prevLight = lightAtmosphereColor;
+        Color prevDark = darkAtmosphereColor;
+        Color prevAmbient = mainLightColor;
+        float timer = 0f;
+        float div = timer/duration;
+        while (div < duration){
+            lightAtmosphereColor = Color.Lerp(prevLight, targetLight, div);
+            darkAtmosphereColor = Color.Lerp(prevDark, targetDark, div);
+            mainLightColor = Color.Lerp(prevAmbient, targetAmbient, div);
+            updateColors();
+            timer += 0.033f;
+            div = timer/duration;
             yield return new WaitForSeconds(0.033f);
         }
     }
