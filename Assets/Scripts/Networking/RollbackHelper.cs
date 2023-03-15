@@ -2,75 +2,64 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using CustomNetcode;
 
 namespace CustomNetcode {
 
-    public class NetcodeConstants {
+    public class NetcodeGlobals {
         public const int bufferSize = 512;
-        public static int tick = 0;
-        public static int ticksPerSecond = 60;
-        public float tickRate = (float) tick / (float) ticksPerSecond;
+        public const int ticksPerSecond = 60;
+        public const float tickRate = 1f / (float) ticksPerSecond;
+        public static int currTick = 0;
     } 
 
-    public interface IRollbackable<T, U> {
-        bool correctable{get; set;}
-        void applyInputToState(T input, U state);
-        void bufferizeInput(T input, T[] inputBuffer); // Do I need to include tick here?
-        void bufferizeState(U state, U[] stateBuffer);
-        void subscribeToRollbackManager(){
-            //Do the thing
+    // process is...
+    // ON CLIENT TICK:
+    // - Get state after physics, bufferize state (currState)
+    // - Apply input to state (currInput, currState)
+    // - Bufferize Input (currInput)
+    // - Send input to server (currInput)
+
+    // ON SERVER RPC:
+    // - recieve currInput 
+    // - Send state to all clients (currState)
+    // - Apply input (currInput, currState)
+
+    // ON CLIENT RPC:
+    // - If owner:
+    // - - check if state matches buffered state (recievedState, bufferedState)
+    // - - - if not good, ()
+    // - - - 
+    // - else:
+    // - - apply state
+
+    // ON SERVER TICK:
+    // - Maybe add input prediction for missing client packets 
+    // - (repeating last input for button holds, probably a better way to do this as just in-state management)
+
+    public interface IStateful {
+        bool RollingBack { get; set; }
+        int InstanceId{ get; }
+        void ApplyCurrInputToCurrState();
+        void AssumeCurrState();
+        void AssumeStateAtTick(int tick); // Generally calling assumeState
+        void AssumeInputAtTick(int tick); // Generally calling ApplyCurrInputToCurrState
+        void BufferizeCurrState(int tick);
+        void SubscribeToRollbackManager(){
+            RollbackManager.Instance.rollbackableMap.Add(InstanceId, this);
         }
-        void unsubscribeFromRollbackManager(){
-            // Do the thing
-        }
-        void triggerRewind(){
-            // Do the thing
+        void UnsubscribeFromRollbackManager(){
+            RollbackManager.Instance.rollbackableMap.Remove(InstanceId);
         }
     }
 
-    public abstract class RollbackHelper : MonoBehaviour
-    {
-        //public IRollbackable connectedComponent;
-    }
-    
-    public class RollbackManager : MonoBehaviour
-    { 
-        // Singleton pattern
-        public static RollbackManager Instance { get; private set; }
-        private void Awake() 
-        { 
-            // If there is an instance, and it's not me, delete myself.
-            if (Instance != null && Instance != this) 
-            { 
-                Destroy(this); 
-            } 
-            else 
-            { 
-                Instance = this; 
-            } 
-            DontDestroyOnLoad(gameObject);
-        }
-
-        // NEED: Link RollbackHelper components
-        // --> This is subscribed to by IRollbackable
-
-
-        public void rewind(int tick){
-            // Get all rollbackables
-            // Move them to parallel physics scene (pretend this is necessary)
-            // Simulate update + physics loop 
-            // Move them to normal physics scene
+    public interface IRollbackable : IStateful{
+        bool IncorrectSyncState();
+        void TriggerRollback(int rollbackTick){
+            RollbackManager.Instance.toRollback = true;
+            RollbackManager.Instance.rollbackTick = Mathf.Min(rollbackTick, RollbackManager.Instance.rollbackTick);
         }
     }
     
-
-    /*
-    What are our tools?
-    - Interface (with methods/properties) connecting directly to main state component of 
-
-    - Rollback helper component which can use some pre-defined connection to do dumb shit
-
-    - Rollback Manager component to coordinate between them all
-
-    */
+ 
 }
