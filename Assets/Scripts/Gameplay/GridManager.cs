@@ -165,7 +165,7 @@ public class GridManager : NetworkBehaviour
         currStaticHeights = staticHeights;
 
         //InvokeRepeating("SmallWave", 0.0f, 20.0f);
-        InvokeRepeating("LargeWave", 0.0f, 20.0f);
+        //InvokeRepeating("LargeWave", 0.0f, 20.0f);
         //InvokeRepeating("AutoSnake", 0.0f, 50.0f);
         //InvokeRepeating("AutoSpiral", 0.0f, 40.0f);
     }

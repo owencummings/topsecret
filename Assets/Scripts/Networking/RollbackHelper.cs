@@ -13,53 +13,27 @@ namespace CustomNetcode {
         public static int currTick = 0;
     } 
 
-    // process is...
-    // ON CLIENT TICK:
-    // - Get state after physics, bufferize state (currState)
-    // - Apply input to state (currInput, currState)
-    // - Bufferize Input (currInput)
-    // - Send input to server (currInput)
-
-    // ON SERVER RPC:
-    // - recieve currInput 
-    // - Send state to all clients (currState)
-    // - Apply input (currInput, currState)
-
-    // ON CLIENT RPC:
-    // - If owner:
-    // - - check if state matches buffered state (recievedState, bufferedState)
-    // - - - if not good, ()
-    // - - - 
-    // - else:
-    // - - apply state
-
-    // ON SERVER TICK:
-    // - Maybe add input prediction for missing client packets 
-    // - (repeating last input for button holds, probably a better way to do this as just in-state management)
-
     public interface IStateful {
         bool RollingBack { get; set; }
-        int InstanceId{ get; }
+        // Consider reworking to reduce the implementation load for the IStateful.
+        // Really only ApplyCurrInputToCurrState() and GenerateCurrState() should need to be rewritten.
         void ApplyCurrInputToCurrState();
         void AssumeCurrState();
         void AssumeStateAtTick(int tick); // Generally calling assumeState
         void AssumeInputAtTick(int tick); // Generally calling ApplyCurrInputToCurrState
+        void CopyBuffersOfObject(GameObject matchingObj);
         void BufferizeCurrState(int tick);
-        void SubscribeToRollbackManager(){
-            RollbackManager.Instance.rollbackableMap.Add(InstanceId, this);
-        }
-        void UnsubscribeFromRollbackManager(){
-            RollbackManager.Instance.rollbackableMap.Remove(InstanceId);
-        }
+        void GenerateCurrState();
     }
 
     public interface IRollbackable : IStateful{
         bool IncorrectSyncState();
-        void TriggerRollback(int rollbackTick){
+        void TriggerRollback(int toTick){ // Move to Manager? probably.
+            if (!RollbackManager.Instance.toRollback) {
+                RollbackManager.Instance.rollbackTick = toTick;
+            }
             RollbackManager.Instance.toRollback = true;
-            RollbackManager.Instance.rollbackTick = Mathf.Min(rollbackTick, RollbackManager.Instance.rollbackTick);
+            RollbackManager.Instance.rollbackTick = Mathf.Min(toTick, RollbackManager.Instance.rollbackTick);
         }
     }
-    
- 
 }

@@ -39,8 +39,6 @@ public class RelayMenuUI : MonoBehaviour
         if (ready){
             if (GUI.Button(new Rect(10, 130, 200, 50), "Launch Game")){
                 NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
-                Debug.Log("Loading parallel scene");
-                SceneManager.LoadScene("ParallelGameScene", LoadSceneMode.Additive);
             }
         }
 
