@@ -42,8 +42,8 @@ public class PlayerInput : NetworkBehaviour
             if (incorrect){
                 (playerState as IRollbackable).TriggerRollback(state.tick);
             }
-        } else {
-            state.tick = NetworkManager.Singleton.LocalTime.Tick; // turn tick from sent-tick to recieved-tick
+        } else if (!IsServer) {
+            state.tick = NetworkManager.Singleton.LocalTime.Tick; // change tick from sent-tick to recieved-tick
             playerState.recievedState = state;
             playerState.BufferizeRecievedState(state.tick);
             playerState.AssumeRecievedState();
