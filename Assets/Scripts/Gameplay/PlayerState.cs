@@ -53,9 +53,9 @@ public class PlayerState : MonoBehaviour, IRollbackable
     }
 
     public InputPayload currInput;
-    public InputPayload recievedInput;
+    public InputPayload receivedInput;
     public StatePayload currState;
-    public StatePayload recievedState;
+    public StatePayload receivedState;
     public StatePayload[] stateBuffer = new StatePayload[NetcodeGlobals.bufferSize];
     public InputPayload[] inputBuffer = new InputPayload[NetcodeGlobals.bufferSize];
 
@@ -88,11 +88,18 @@ public class PlayerState : MonoBehaviour, IRollbackable
         // State enum tracking eventually
     }
 
-    public void AssumeRecievedState(){
-        rb.position = recievedState.position;
-        rb.rotation = recievedState.rotation;
-        rb.velocity = recievedState.velocity;
+    public void AssumeReceivedState(){
+        rb.position = receivedState.position;
+        rb.rotation = receivedState.rotation;
+        rb.velocity = receivedState.velocity;
 
+        // State enum tracking eventually
+    }
+
+    public void BlendToReceivedState(){
+        rb.position = Vector3.Lerp(rb.position, receivedState.position, 0.5f);
+        rb.rotation = Quaternion.Lerp(rb.rotation, receivedState.rotation, 0.5f);
+        rb.velocity = Vector3.Lerp(rb.velocity, receivedState.velocity, 0.5f);
         // State enum tracking eventually
     }
 
@@ -105,8 +112,8 @@ public class PlayerState : MonoBehaviour, IRollbackable
         stateBuffer[tick % NetcodeGlobals.bufferSize] = currState;
     }
 
-    public void BufferizeRecievedState(int tick){
-        stateBuffer[tick % NetcodeGlobals.bufferSize] = recievedState;
+    public void BufferizeReceivedState(int tick){
+        stateBuffer[tick % NetcodeGlobals.bufferSize] = receivedState;
     }
 
     public void GenerateCurrState(){
@@ -126,17 +133,17 @@ public class PlayerState : MonoBehaviour, IRollbackable
     }
 
     public bool IncorrectSyncState(){
-        bool incorrect = (Vector3.Distance(recievedState.position, stateBuffer[recievedState.tick % NetcodeGlobals.bufferSize].position) > .1f);
+        bool incorrect = (Vector3.Distance(receivedState.position, stateBuffer[receivedState.tick % NetcodeGlobals.bufferSize].position) > .1f);
         if (incorrect){
-            Debug.Log("Received: " + recievedState.position.ToString() + "\n" + "Expected: " + stateBuffer[recievedState.tick % NetcodeGlobals.bufferSize].position.ToString()
-                    + "\n" + "Previous: " + stateBuffer[(recievedState.tick-1)% NetcodeGlobals.bufferSize].position.ToString()
-                     + stateBuffer[(recievedState.tick-1)% NetcodeGlobals.bufferSize].velocity.ToString()
-                    + "\n" + "PreviousIn: " + inputBuffer[(recievedState.tick-1)% NetcodeGlobals.bufferSize].up.ToString()
-                     + inputBuffer[(recievedState.tick-1)% NetcodeGlobals.bufferSize].down.ToString()
-                      + inputBuffer[(recievedState.tick-1)% NetcodeGlobals.bufferSize].left.ToString()
-                       + inputBuffer[(recievedState.tick-1)% NetcodeGlobals.bufferSize].right.ToString());
+            Debug.Log("Received: " + receivedState.position.ToString() + "\n" + "Expected: " + stateBuffer[receivedState.tick % NetcodeGlobals.bufferSize].position.ToString()
+                    + "\n" + "Previous: " + stateBuffer[(receivedState.tick-1)% NetcodeGlobals.bufferSize].position.ToString()
+                     + stateBuffer[(receivedState.tick-1)% NetcodeGlobals.bufferSize].velocity.ToString()
+                    + "\n" + "PreviousIn: " + inputBuffer[(receivedState.tick-1)% NetcodeGlobals.bufferSize].up.ToString()
+                     + inputBuffer[(receivedState.tick-1)% NetcodeGlobals.bufferSize].down.ToString()
+                      + inputBuffer[(receivedState.tick-1)% NetcodeGlobals.bufferSize].left.ToString()
+                       + inputBuffer[(receivedState.tick-1)% NetcodeGlobals.bufferSize].right.ToString());
         }
-        return (Vector3.Distance(recievedState.position, stateBuffer[recievedState.tick % NetcodeGlobals.bufferSize].position) > .1f);
+        return (Vector3.Distance(receivedState.position, stateBuffer[receivedState.tick % NetcodeGlobals.bufferSize].position) > .1f);
     }
 
 
@@ -144,7 +151,7 @@ public class PlayerState : MonoBehaviour, IRollbackable
         // Player will have a variety of inputs based on state... make an extended player input pattern that links up here
 
         // Apply jump and set grounded state...
-        if (Physics.Raycast(this.transform.position, Vector3.down, 1f, layerMask)){
+        if (Physics.Raycast(this.rb.position, Vector3.down, 1f, layerMask)){
             speedForce = 30.0f;
             rb.drag = 0.1f;
             if (currInput.jump){
