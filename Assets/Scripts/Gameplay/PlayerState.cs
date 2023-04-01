@@ -81,16 +81,18 @@ public class PlayerState : MonoBehaviour, IRollbackable
     }
 
     public void AssumeCurrState(){
-        transform.position = currState.position;
-        //transform.rotation = currState.rotation;
+        rb.position = currState.position;
+        rb.rotation = currState.rotation;
         rb.velocity = currState.velocity;
+        Debug.Log("Assume received at " + NetworkManager.Singleton.LocalTime.Tick.ToString());
         // State enum tracking eventually
     }
 
     public void AssumeRecievedState(){
-        transform.position = recievedState.position;
-        transform.rotation = recievedState.rotation;
+        rb.position = recievedState.position;
+        rb.rotation = recievedState.rotation;
         rb.velocity = recievedState.velocity;
+
         // State enum tracking eventually
     }
 
@@ -108,8 +110,8 @@ public class PlayerState : MonoBehaviour, IRollbackable
     }
 
     public void GenerateCurrState(){
-        currState.position = transform.position;
-        currState.rotation = transform.rotation;
+        currState.position = rb.position;
+        currState.rotation = rb.rotation;
         currState.velocity = rb.velocity;
     }
 
@@ -126,9 +128,13 @@ public class PlayerState : MonoBehaviour, IRollbackable
     public bool IncorrectSyncState(){
         bool incorrect = (Vector3.Distance(recievedState.position, stateBuffer[recievedState.tick % NetcodeGlobals.bufferSize].position) > .1f);
         if (incorrect){
-            Debug.Log("Received: " + recievedState.position.ToString());
-            Debug.Log("Expected: " + stateBuffer[recievedState.tick % NetcodeGlobals.bufferSize].position.ToString());
-            Debug.Log("Previous: " + stateBuffer[(recievedState.tick - 1)% NetcodeGlobals.bufferSize].position.ToString());
+            Debug.Log("Received: " + recievedState.position.ToString() + "\n" + "Expected: " + stateBuffer[recievedState.tick % NetcodeGlobals.bufferSize].position.ToString()
+                    + "\n" + "Previous: " + stateBuffer[(recievedState.tick-1)% NetcodeGlobals.bufferSize].position.ToString()
+                     + stateBuffer[(recievedState.tick-1)% NetcodeGlobals.bufferSize].velocity.ToString()
+                    + "\n" + "PreviousIn: " + inputBuffer[(recievedState.tick-1)% NetcodeGlobals.bufferSize].up.ToString()
+                     + inputBuffer[(recievedState.tick-1)% NetcodeGlobals.bufferSize].down.ToString()
+                      + inputBuffer[(recievedState.tick-1)% NetcodeGlobals.bufferSize].left.ToString()
+                       + inputBuffer[(recievedState.tick-1)% NetcodeGlobals.bufferSize].right.ToString());
         }
         return (Vector3.Distance(recievedState.position, stateBuffer[recievedState.tick % NetcodeGlobals.bufferSize].position) > .1f);
     }

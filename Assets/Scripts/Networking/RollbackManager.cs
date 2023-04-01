@@ -53,12 +53,14 @@ namespace CustomNetcode{
         public void rewind(int tick){
             // Get buffers from original
             // So, we need a reference to every rollbackGhost
-            Debug.Log("Rolling back from " + NetworkManager.Singleton.LocalTime.Tick.ToString()  + " to " + tick.ToString() + "ticks");
+            //Debug.Log("Rolling back from " + NetworkManager.Singleton.LocalTime.Tick.ToString()  + " to " + tick.ToString() + "ticks");
             foreach (var (objectId,rollbackable) in originalMap){
                 IStateful ghost = ghostMap[objectId];
                 ghostObjectMap[objectId].SetActive(true);
-                ghost.CopyBuffersOfObject(originalObjectMap[objectId]);
-                ghost.AssumeStateAtTick(tick);
+                if (ghost != null){
+                    ghost.CopyBuffersOfObject(originalObjectMap[objectId]);
+                    ghost.AssumeStateAtTick(tick);
+                }
             }
 
 
@@ -67,11 +69,13 @@ namespace CustomNetcode{
             // same but target ghost instead
             while (currTick <= NetworkManager.Singleton.LocalTime.Tick) {
                 foreach (var (objectId,ghost) in ghostMap){
-                    ghost.RollingBack = true;
-                    ghost.GenerateCurrState();
-                    ghost.BufferizeCurrState(currTick);
-                    ghost.AssumeInputAtTick(currTick);
-                    ghost.ApplyCurrInputToCurrState();
+                    if (ghost != null){
+                        ghost.RollingBack = true;
+                        ghost.GenerateCurrState();
+                        ghost.BufferizeCurrState(currTick);
+                        ghost.AssumeInputAtTick(currTick);
+                        ghost.ApplyCurrInputToCurrState();
+                    }
                 }
                 currTick += 1;
                 predictionPhysicsScene.Simulate(NetcodeGlobals.tickRate);
@@ -79,11 +83,14 @@ namespace CustomNetcode{
 
             foreach (var (objectId, rollbackable) in originalMap){
                 var ghostObject = ghostObjectMap[objectId];
-                rollbackable.CopyBuffersOfObject(ghostObject);
-                // v This may only be necessary for rollbackables, not statefuls
-                rollbackable.AssumeStateAtTick(NetworkManager.Singleton.LocalTime.Tick);
+                if (rollbackable != null){
+                    rollbackable.CopyBuffersOfObject(ghostObject);
+                    // v This may only be necessary for rollbackables, not statefuls
+                    rollbackable.AssumeStateAtTick(NetworkManager.Singleton.LocalTime.Tick);
+                }
                 ghostObject.SetActive(false);
             }
+            Debug.Log("Rolled back to " + NetworkManager.Singleton.LocalTime.Tick.ToString());
             Physics.autoSimulation = true;
         }
 

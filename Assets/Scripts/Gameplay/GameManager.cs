@@ -11,6 +11,7 @@ public class GameManager : NetworkBehaviour
 
     public GameObject gridManagerPrefab;
     public GameObject playerPrefab;
+    public GameObject planePrefab;
     public GameObject playerCinemachine;
 
     [ServerRpc(RequireOwnership = false)]
@@ -26,11 +27,11 @@ public class GameManager : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        
+        Physics.gravity = new Vector3(0, -20.0f, 0);
+        Instantiate(planePrefab, Vector3.zero, Quaternion.identity);
         if (IsServer){
-            GameObject gridManager = Instantiate(gridManagerPrefab, Vector3.zero, Quaternion.identity);
-            gridManager.GetComponent<NetworkObject>().Spawn();
-            Physics.gravity = new Vector3(0, -20.0f, 0);
+            //GameObject gridManager = Instantiate(gridManagerPrefab, Vector3.zero, Quaternion.identity);
+            //gridManager.GetComponent<NetworkObject>().Spawn();
         }
 
         if (IsClient){

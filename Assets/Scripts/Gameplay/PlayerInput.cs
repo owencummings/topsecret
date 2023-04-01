@@ -35,17 +35,18 @@ public class PlayerInput : NetworkBehaviour
 
     [ClientRpc]
     void SyncStateClientRpc(PlayerState.StatePayload state){
-        if (IsOwner){
+        if (IsOwner && !IsServer){
             playerState.recievedState = state;
-            if (playerState.IncorrectSyncState()){
-                playerState.BufferizeRecievedState(state.tick);
+            bool incorrect = playerState.IncorrectSyncState();
+            playerState.BufferizeRecievedState(state.tick);
+            if (incorrect){
                 (playerState as IRollbackable).TriggerRollback(state.tick);
             }
         } else {
             state.tick = NetworkManager.Singleton.LocalTime.Tick; // turn tick from sent-tick to recieved-tick
             playerState.recievedState = state;
-            playerState.AssumeRecievedState();
             playerState.BufferizeRecievedState(state.tick);
+            playerState.AssumeRecievedState();
         }
     }
     #endregion
@@ -64,9 +65,13 @@ public class PlayerInput : NetworkBehaviour
     }
 
     void FixedUpdate(){
+        playerState.currState = playerState.GenerateState();
+        playerState.BufferizeCurrState(NetworkManager.Singleton.LocalTime.Tick);
+
         if (!IsSpawned){
             return;
         }
+
         if (IsOwner){
             playerState.currInput = new PlayerState.InputPayload();
             if (toJump){
@@ -93,8 +98,6 @@ public class PlayerInput : NetworkBehaviour
         }
 
         if (IsServer || IsOwner){
-            playerState.currState = playerState.GenerateState();
-            playerState.BufferizeCurrState(NetworkManager.Singleton.LocalTime.Tick);
             playerState.ApplyCurrInputToCurrState();     
         }
 
@@ -103,7 +106,6 @@ public class PlayerInput : NetworkBehaviour
             playerState.inputBuffer[NetworkManager.Singleton.LocalTime.Tick%NetcodeGlobals.bufferSize] = playerState.currInput;
             ApplyInputServerRpc(playerState.currInput);
         }
-
 
         toJump = false;
     }

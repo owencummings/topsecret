@@ -146,7 +146,7 @@ public class GridManager : NetworkBehaviour
                 staticHeights[i,j] = Mathf.Floor(-1f * cubeSize * gridSize/2 + xSinAmp*Mathf.Sin(xSinPeriod*(i + xSinShift))
                                                                              + ySinAmp*Mathf.Sin(ySinPeriod*(j + ySinShift)));
                 cubes[i,j] = Instantiate(prefab, new Vector3((i-gridSize/2)*cubeSize, staticHeights[i,j], (j-gridSize/2)*cubeSize),
-                                                                Quaternion.identity);
+                                                                Quaternion.identity, this.transform);
                 cubes[i,j].GetComponent<NetworkObject>().Spawn();
                 cubes[i,j].transform.localScale = new Vector3(cubeSize, gridSize*cubeSize, cubeSize); // TODO: Make the transform a little smaller than the RB for visual effect?
                 rb = cubes[i,j].GetComponent<Rigidbody>();

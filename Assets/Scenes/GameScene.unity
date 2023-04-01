@@ -356,7 +356,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 2
+    m_Type: 1
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -880,6 +880,8 @@ MonoBehaviour:
   gridManagerPrefab: {fileID: 7722981399092450381, guid: 71b078840cad8894ab9778526ee628e4,
     type: 3}
   playerPrefab: {fileID: 7546010314176067485, guid: fc4eb979eb2579248b69814f65f616ed,
+    type: 3}
+  planePrefab: {fileID: 5862393805405242037, guid: da717ad358f002344bc7bf2bf8b7adfa,
     type: 3}
   playerCinemachine: {fileID: 1888546806}
 --- !u!1 &1351437088
@@ -1437,8 +1439,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12e3d1f55940fe045b592ded79bbe43c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  toRollback: 0
-  rollbackTick: 0
 --- !u!4 &2113937899
 Transform:
   m_ObjectHideFlags: 0

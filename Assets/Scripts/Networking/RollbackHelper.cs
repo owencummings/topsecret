@@ -33,7 +33,7 @@ namespace CustomNetcode {
                 RollbackManager.Instance.rollbackTick = toTick;
             }
             RollbackManager.Instance.toRollback = true;
-            RollbackManager.Instance.rollbackTick = Mathf.Min(toTick, RollbackManager.Instance.rollbackTick);
+            RollbackManager.Instance.rollbackTick = toTick;
         }
     }
 }
