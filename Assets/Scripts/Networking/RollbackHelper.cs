@@ -21,6 +21,7 @@ namespace CustomNetcode {
         void AssumeCurrState();
         void AssumeStateAtTick(int tick); // Generally calling assumeState
         void AssumeInputAtTick(int tick); // Generally calling ApplyCurrInputToCurrState
+        void BlendToStateAtTick(int tick);
         void CopyBuffersOfObject(GameObject matchingObj);
         void BufferizeCurrState(int tick);
         void GenerateCurrState();

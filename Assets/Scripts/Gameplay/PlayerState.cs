@@ -103,6 +103,14 @@ public class PlayerState : MonoBehaviour, IRollbackable
         // State enum tracking eventually
     }
 
+    public void BlendToStateAtTick(int tick){
+        StatePayload state = stateBuffer[tick % NetcodeGlobals.bufferSize];
+        currState = state;
+        rb.position = Vector3.Lerp(rb.position, state.position, 0.5f);
+        rb.rotation = Quaternion.Lerp(rb.rotation, state.rotation, 0.5f);
+        rb.velocity = Vector3.Lerp(rb.velocity, state.velocity, 0.5f);
+    }
+
     public void AssumeStateAtTick(int tick){
         currState = stateBuffer[tick % NetcodeGlobals.bufferSize];
         AssumeCurrState();
@@ -151,7 +159,7 @@ public class PlayerState : MonoBehaviour, IRollbackable
         // Player will have a variety of inputs based on state... make an extended player input pattern that links up here
 
         // Apply jump and set grounded state...
-        if (Physics.Raycast(this.rb.position, Vector3.down, 1f, layerMask)){
+        if (Physics.Raycast(this.rb.position, Vector3.down, 1.1f, layerMask)){
             speedForce = 30.0f;
             rb.drag = 0.1f;
             if (currInput.jump){

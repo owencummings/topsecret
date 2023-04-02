@@ -132,7 +132,7 @@ public class PlayerInput : NetworkBehaviour
         }
     }
 
-    public override void OnNetworkDespawn(){ // Is there a network-equivalent?
+    public override void OnNetworkDespawn(){
 
     }
 }

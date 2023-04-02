@@ -86,7 +86,7 @@ namespace CustomNetcode{
                 if (rollbackable != null){
                     rollbackable.CopyBuffersOfObject(ghostObject);
                     // v This may only be necessary for rollbackables, not statefuls
-                    rollbackable.AssumeStateAtTick(NetworkManager.Singleton.LocalTime.Tick);
+                    rollbackable.BlendToStateAtTick(NetworkManager.Singleton.LocalTime.Tick);
                 }
                 ghostObject.SetActive(false);
             }
