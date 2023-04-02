@@ -46,7 +46,8 @@ public class PlayerInput : NetworkBehaviour
             state.tick = NetworkManager.Singleton.LocalTime.Tick; // change tick from sent-tick to received-tick
             playerState.receivedState = state;
             playerState.BufferizeReceivedState(state.tick);
-            playerState.AssumeReceivedState();
+            // Add a buffer instead so that inputs come in smoothly? 
+            playerState.BlendToReceivedState();
         }
     }
     #endregion
